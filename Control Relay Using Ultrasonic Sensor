@@ -1,0 +1,93 @@
+#include <SevSeg.h>
+
+SevSeg sevseg;
+
+void setup() {
+  byte numDigits = 2;
+  byte digitPins[] = {4, 5};
+  byte segmentPins[] = {6, 7, 8, 9, 10, 11, 12, 13}; // Adjust pins according to your setup
+  sevseg.begin(COMMON_CATHODE, numDigits, digitPins, segmentPins);
+}
+
+void loop() {
+  // Your code for counting and button handling
+
+  int tens = count / 10;
+  int units = count % 10;
+  sevseg.setNumber(tens * 10 + units, 2);
+  sevseg.refreshDisplay();
+}
+
+// Pin Definitions
+const int buttonPin1 = 2; // Button 1 is connected to digital pin 2
+const int buttonPin2 = 3; // Button 2 is connected to digital pin 3
+const int digit1 = 4;     // 7-segment display for units digit
+const int digit2 = 5;     // 7-segment display for tens digit
+
+// Variables
+int count = 0;            // Counter variable
+
+void setup() {
+  pinMode(buttonPin1, INPUT_PULLUP); // Set buttonPin1 as input with internal pull-up resistor
+  pinMode(buttonPin2, INPUT_PULLUP); // Set buttonPin2 as input with internal pull-up resistor
+  pinMode(digit1, OUTPUT);            // Set digit1 pin as output
+  pinMode(digit2, OUTPUT);            // Set digit2 pin as output
+}
+
+void loop() {
+  // Read the state of the push buttons
+  int buttonState1 = digitalRead(buttonPin1);
+  int buttonState2 = digitalRead(buttonPin2);
+
+  // Increment count if button 1 is pressed
+  if (buttonState1 == LOW) {
+    delay(100); // Debounce delay
+    count++;
+  }
+
+  // Decrement count if button 2 is pressed
+  if (buttonState2 == LOW) {
+    delay(100); // Debounce delay
+    count--;
+  }
+
+  // Ensure count stays within the range of 0 to 99
+  if (count < 0) {
+    count = 99;
+  } else if (count > 99) {
+    count = 0;
+  }
+
+  // Display the count on the 7-segment displays
+  int tens = count / 10;  // Calculate tens digit
+  int units = count % 10; // Calculate units digit
+
+  displayDigit(digit1, units); // Display units digit
+  displayDigit(digit2, tens);  // Display tens digit
+}
+
+// Function to display a digit on the 7-segment display
+void displayDigit(int digitPin, int digit) {
+  // Define the patterns for each digit from 0 to 9
+  const byte digitPatterns[10] = {
+    B11111100, // 0
+    B01100000, // 1
+    B11011010, // 2
+    B11110010, // 3
+    B01100110, // 4
+    B10110110, // 5
+    B10111110, // 6
+    B11100000, // 7
+    B11111110, // 8
+    B11100110  // 9
+  };
+
+  // Select the appropriate pattern for the given digit
+  byte pattern = digitPatterns[digit];
+
+  // Write the pattern to the 7-segment display
+  digitalWrite(digitPin, HIGH); // Enable the digit
+  shiftOut(6, 7, LSBFIRST, pattern); // Send pattern to 7-segment display
+  digitalWrite(digitPin, LOW); // Disable the digit
+}
+ 
